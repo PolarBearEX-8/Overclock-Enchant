@@ -1,0 +1,15 @@
+name: Overclock
+version: '1.0'
+main: my.yourname.overclock.Overclock
+api-version: '1.21'
+folia-supported: true
+
+commands:
+  overclock:
+    description: Add unsafe enchant
+    usage: /overclock <enchant> <level>
+    permission: overclock.use
+
+permissions:
+  overclock.use:
+    default: op
