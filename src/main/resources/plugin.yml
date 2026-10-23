@@ -7,7 +7,7 @@ folia-supported: true
 commands:
   overclock:
     description: Add unsafe enchant
-    usage: /overclock <enchant> <level>
+    usage: /overclock <enchant> <level> | /overclock 32k | /overclock name <name>
     permission: overclock.use
 
 permissions:

@@ -90,7 +90,14 @@ public class Overclock extends JavaPlugin implements TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) return true;
+        if (!sender.hasPermission("overclock.use")) {
+            sender.sendMessage("§cYou don't have permission to use this command.");
+            return true;
+        }
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("§cThis command can only be used by players.");
+            return true;
+        }
 
         ItemStack item = player.getInventory().getItemInMainHand();
         if (item.getType().isAir()) {
@@ -122,26 +129,38 @@ public class Overclock extends JavaPlugin implements TabExecutor {
             return true;
         }
 
-        String enchName = args[0].toLowerCase();
-        int add;
+        String enchName = args[0].toLowerCase(Locale.ROOT);
+        String levelInput = args[1];
+        boolean relativeLevel = levelInput.startsWith("+") || levelInput.startsWith("-");
+        int level;
         try {
-            add = Integer.parseInt(args[1]);
-        } catch (Exception e) {
-            player.sendMessage("§cตัวเลขไม่ถูกต้อง");
+            level = Integer.parseInt(levelInput);
+        } catch (NumberFormatException e) {
+            player.sendMessage("§cInvalid level.");
+            return true;
+        }
+
+        if (!relativeLevel && level < 1) {
+            player.sendMessage("§cLevel must be 1 or higher.");
+            return true;
+        }
+        if (relativeLevel && level == 0) {
+            player.sendMessage("§cRelative level cannot be 0.");
             return true;
         }
 
         Enchantment enchant = getEnchant(enchName);
         if (enchant == null) {
-            player.sendMessage("§cไม่พบ Enchant นี้");
+            player.sendMessage("§cUnknown enchantment: §e" + enchName);
             return true;
         }
 
         Map<String, Integer> real = getReal(item);
         List<String> order = getOrder(item);
 
-        int current = real.getOrDefault(enchName, 0);
-        int newLevel = current + add;
+        int newLevel = relativeLevel
+                ? real.getOrDefault(enchName, 0) + level
+                : level;
 
         if (newLevel <= 0) {
             real.remove(enchName);
@@ -157,7 +176,11 @@ public class Overclock extends JavaPlugin implements TabExecutor {
         saveOrder(item, order);
         updateLore(item, real, order);
 
-        player.sendMessage("§a" + enchName + " เลเวลตอนนี้คือ: " + newLevel);
+        if (newLevel <= 0) {
+            player.sendMessage("§aRemoved " + enchName + " from your item.");
+        } else {
+            player.sendMessage("§a" + enchName + " level is now: §e" + newLevel);
+        }
         return true;
     }
 
